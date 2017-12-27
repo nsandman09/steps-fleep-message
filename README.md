@@ -1,4 +1,4 @@
-# Slack Message step
+# Fleep Message step
 
 Send a [Fleep](https://fleep.io) message from your [bitrise](https://www.bitrise.io/cli) build!
 
