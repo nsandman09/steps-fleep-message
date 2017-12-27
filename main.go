@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
+	"bytes"
 
 	"strings"
 
@@ -16,7 +16,7 @@ import (
 
 // ConfigsModel ...
 type ConfigsModel struct {
-	// Slack Inputs
+	// Fleep Inputs
 	WebhookURL          string
 	Channel             string
 	FromUsername        string
@@ -64,7 +64,7 @@ func createConfigsModelFromEnvs() ConfigsModel {
 
 func (configs ConfigsModel) print() {
 	fmt.Println("")
-	fmt.Println(colorstring.Blue("Slack configs:"))
+	fmt.Println(colorstring.Blue("Fleep configs:"))
 	fmt.Println(" - WebhookURL:", configs.WebhookURL)
 	fmt.Println(" - Channel:", configs.Channel)
 	fmt.Println(" - FromUsername:", configs.FromUsername)
@@ -112,7 +112,7 @@ type AttachmentItemModel struct {
 }
 
 // RequestParams ...
-type RequestParams struct {
+/*type RequestParams struct {
 	// - required
 	Text string `json:"text"`
 	// OR use attachment instead of text, for better formatting
@@ -123,6 +123,11 @@ type RequestParams struct {
 	EmojiIcon *string `json:"icon_emoji"`
 	IconURL   *string `json:"icon_url"`
 	LinkNames int     `json:"link_names"`
+}*/
+type RequestParams struct {
+	// - required
+	Text string `json:"message"`
+	Username  *string `json:"user"`
 }
 
 // ensureNewlineEscapeChar replaces the "\" + "n" char sequences with the "\n" newline char
@@ -131,16 +136,16 @@ func ensureNewlineEscapeChar(s string) string {
 }
 
 // CreatePayloadParam ...
-func CreatePayloadParam(configs ConfigsModel) (string, error) {
+func CreatePayloadParam(configs ConfigsModel) ([]byte, error) {
 	// - required
-	msgColor := configs.Color
+	/*msgColor := configs.Color
 	if configs.IsBuildFailed {
 		if configs.ColorOnError == "" {
 			fmt.Println(colorstring.Yellow(" (i) Build failed but no color_on_error defined, using default."))
 		} else {
 			msgColor = configs.ColorOnError
 		}
-	}
+	}*/
 	msgText := configs.Message
 	if configs.IsBuildFailed {
 		if configs.MessageOnError == "" {
@@ -151,7 +156,7 @@ func CreatePayloadParam(configs ConfigsModel) (string, error) {
 	}
 	msgText = ensureNewlineEscapeChar(msgText)
 	// - optional attachment params
-	msgImage := configs.ImageURL
+	/*msgImage := configs.ImageURL
 	if configs.IsBuildFailed {
 		if configs.ImageURLOnError == "" {
 			fmt.Println(colorstring.Yellow(" (i) Build failed but no image_url_on_error defined, using default."))
@@ -169,13 +174,16 @@ func CreatePayloadParam(configs ConfigsModel) (string, error) {
 				MrkdwnIn: []string{"text", "pretext", "fields"},
 			},
 		},
+	}*/
+	reqParams := RequestParams{
+		Text: msgText,
 	}
 
 	// - optional
-	reqChannel := configs.Channel
+	/*reqChannel := configs.Channel
 	if reqChannel != "" {
 		reqParams.Channel = &reqChannel
-	}
+	}*/
 	reqUsername := configs.FromUsername
 	if reqUsername != "" {
 		reqParams.Username = &reqUsername
@@ -188,7 +196,7 @@ func CreatePayloadParam(configs ConfigsModel) (string, error) {
 		}
 	}
 
-	reqEmojiIcon := configs.Emoji
+	/*reqEmojiIcon := configs.Emoji
 	if reqEmojiIcon != "" {
 		reqParams.EmojiIcon = &reqEmojiIcon
 	}
@@ -218,7 +226,7 @@ func CreatePayloadParam(configs ConfigsModel) (string, error) {
 
 	if configs.IsLinkNames {
 		reqParams.LinkNames = 1
-	}
+	}*/
 
 	if configs.IsDebugMode {
 		fmt.Printf("Parameters: %#v\n", reqParams)
@@ -227,11 +235,12 @@ func CreatePayloadParam(configs ConfigsModel) (string, error) {
 	// JSON serialize the request params
 	reqParamsJSONBytes, err := json.Marshal(reqParams)
 	if err != nil {
-		return "", nil
+		return []byte{}, nil
 	}
-	reqParamsJSONString := string(reqParamsJSONBytes)
+	//reqParamsJSONString := string(reqParamsJSONBytes)
 
-	return reqParamsJSONString, nil
+	//return reqParamsJSONString, nil
+	return reqParamsJSONBytes, nil
 }
 
 func main() {
@@ -262,8 +271,12 @@ func main() {
 
 	//
 	// send request
-	resp, err := http.PostForm(requestURL,
-		url.Values{"payload": []string{reqParamsJSONString}})
+	/*jsonString, err := json.Marshal(map[string]string{"payload": reqParamsJSONString})
+	if err != nil {
+		fmt.Println(colorstring.Red("Failed to send the request:"), err)
+	}*/
+
+	resp, err := http.Post(requestURL, "application/json", bytes.NewBuffer(reqParamsJSONString))
 	if err != nil {
 		fmt.Println(colorstring.Red("Failed to send the request:"), err)
 		os.Exit(1)
@@ -278,17 +291,17 @@ func main() {
 	if resp.StatusCode != 200 || bodyStr != "ok" {
 		fmt.Println()
 		fmt.Println(colorstring.Red("Request failed"))
-		fmt.Println("Response from Slack: ", bodyStr)
+		fmt.Println("Response from Fleep: ", bodyStr)
 		fmt.Println()
 		os.Exit(1)
 	}
 
 	if configs.IsDebugMode {
 		fmt.Println()
-		fmt.Println("Response from Slack: ", bodyStr)
+		fmt.Println("Response from Fleep: ", bodyStr)
 	}
 	fmt.Println()
-	fmt.Println(colorstring.Green("Slack message successfully sent! 🚀"))
+	fmt.Println(colorstring.Green("Fleep message successfully sent! 🚀"))
 	fmt.Println()
 	os.Exit(0)
 }
