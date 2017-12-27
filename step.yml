@@ -1,19 +1,17 @@
 ---
-title: Send a Slack message
-summary: Send a [Slack](https://slack.com/) message to a channel or group.
+title: Send a Fleep message
+summary: Send a [Fleep](https://fleep.io/) message to a channel or group.
 description: |
-  Send a [Slack](https://slack.com/) message to a channel or group.
+  Send a [Fleep](https://fleep.io/) message to a channel or group.
 
-  You have to register an **Incoming WebHook integration** at:
-  https://**YOURTEAMNAME**.slack.com/services
-
-  On the WebHook integration's page copy the **Webhook URL**.
+  To add this to a group, register a **Generic Webhook** under the sidebar settings.
+  Under "Active Integrations", copy the **Incoming URL**.
 
   *Don't forget to enable this Step to **Always run** if
   you want to get notified about failed builds as well!*
-website: https://github.com/bitrise-io/steps-slack-message
-source_code_url: https://github.com/bitrise-io/steps-slack-message
-support_url: https://github.com/bitrise-io/steps-slack-message/issues
+website: https://github.com/nsandman09/steps-fleep-message
+source_code_url: https://github.com/nsandman09/steps-fleep-message
+support_url: https://github.com/nsandman09/steps-fleep-message/issues
 host_os_tags:
   - osx-10.10
   - ubuntu-14.04
@@ -30,21 +28,13 @@ deps:
     bin_name: go
 toolkit:
   go:
-    package_name: github.com/bitrise-io/steps-slack-message
+    package_name: github.com/nsandman09/steps-fleep-message
 inputs:
   - webhook_url:
     opts:
-      title: "Slack Webhook URL"
+      title: "Fleep Webhook URL"
       is_expand: true
       is_required: true
-  - channel:
-    opts:
-      title: "Target Slack channel, group or username"
-      description: |
-         * channel example: #general
-         * username example: @username
-      is_expand: true
-      is_required: false
   - from_username: Bitrise CI - OK
     opts:
       title: "The 'from' name"
@@ -73,94 +63,6 @@ inputs:
         leave this option empty then the default one will be used.
       is_expand: true
       is_required: false
-  - color: "good"
-    opts:
-      title: "Message color"
-      description: |
-        Color of the message. You can use hex color codes,
-        or the predefined Slack color words like `good`, `warning` or `danger`.
-
-        You can find more info about the color and other text formatting
-        in [Slack's documentation](https://api.slack.com/docs/message-attachments).
-      is_expand: true
-      is_required: true
-  - color_on_error: "danger"
-    opts:
-      title: "Message color"
-      description: |
-        **This option will be used if the build failed.** If you
-        leave this option empty then the default one will be used.
-      is_expand: true
-      is_required: false
-  - image_url:
-    opts:
-      title: "Image URL"
-      description: |
-        Optionally render an image from a URL.
-        You can include GIFs.
-      is_expand: true
-      is_required: false
-  - image_url_on_error:
-    opts:
-      title: "Image URL - if build failed"
-      description: |
-        **This option will be used if the build failed.**
-        Optionally render an image from a URL.
-        You can include GIFs.
-      is_expand: true
-      is_required: false
-  - emoji: ":white_check_mark:"
-    opts:
-      title: "Emoji Icon"
-      description: |
-        Optionally you can specify a Slack emoji as the sender
-        icon. You can use the Ghost icon for example
-        if you specify `:ghost:` here as an input.
-
-        **If you specify an Icon URL then this Emoji input will be ignored!**
-      is_expand: true
-      is_required: false
-  - emoji_on_error: ":no_entry_sign:"
-    opts:
-      title: "Emoji Icon - if build failed"
-      description: |
-        **This option will be used if the build failed.** If you
-        leave this option empty then the default one will be used.
-      is_expand: true
-      is_required: false
-  - icon_url:
-    opts:
-      title: "Icon URL"
-      description: |
-        Optionally you can specify a custom icon image URL
-        which will be presented as the sender icon.
-
-        Slack recommends an image a square image,
-        which can't be larger than 128px in width nor in height,
-        and it must be smaller than 64K in size.
-        Slack custom emoji guideline: [https://slack.zendesk.com/hc/en-us/articles/202931348-Using-emoji-and-emoticons](https://slack.zendesk.com/hc/en-us/articles/202931348-Using-emoji-and-emoticons)
-
-        *If you specify this input, the Emoji input will be ignored!*
-      is_expand: true
-      is_required: false
-  - icon_url_on_error:
-    opts:
-      title: "Icon URL - if build failed"
-      description: |
-        **This option will be used if the build failed.** If you
-        leave this option empty then the default one will be used.
-      is_expand: true
-      is_required: false
-  - link_names: "yes"
-    opts:
-      title: "Link Names"
-      description: |
-        Linkify names in the message such as `@slackbot` or `#random`
-      is_expand: true
-      is_required: false
-      value_options:
-      - "yes"
-      - "no"
   - is_debug_mode: "no"
     opts:
       title: "Debug mode?"
