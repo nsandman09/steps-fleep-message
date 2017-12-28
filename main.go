@@ -18,20 +18,10 @@ import (
 type ConfigsModel struct {
 	// Fleep Inputs
 	WebhookURL          string
-	Channel             string
 	FromUsername        string
 	FromUsernameOnError string
 	Message             string
 	MessageOnError      string
-	Color               string
-	ColorOnError        string
-	ImageURL            string
-	ImageURLOnError     string
-	Emoji               string
-	EmojiOnError        string
-	IconURL             string
-	IconURLOnError      string
-	IsLinkNames         bool
 	// Other Inputs
 	IsDebugMode bool
 	// Other configs
@@ -41,20 +31,10 @@ type ConfigsModel struct {
 func createConfigsModelFromEnvs() ConfigsModel {
 	return ConfigsModel{
 		WebhookURL:          os.Getenv("webhook_url"),
-		Channel:             os.Getenv("channel"),
 		FromUsername:        os.Getenv("from_username"),
 		FromUsernameOnError: os.Getenv("from_username_on_error"),
 		Message:             os.Getenv("message"),
 		MessageOnError:      os.Getenv("message_on_error"),
-		Emoji:               os.Getenv("emoji"),
-		EmojiOnError:        os.Getenv("emoji_on_error"),
-		Color:               os.Getenv("color"),
-		ColorOnError:        os.Getenv("color_on_error"),
-		ImageURL:            os.Getenv("image_url"),
-		ImageURLOnError:     os.Getenv("image_url_on_error"),
-		IconURL:             os.Getenv("icon_url"),
-		IconURLOnError:      os.Getenv("icon_url_on_error"),
-		IsLinkNames:         os.Getenv("link_names") == "yes",
 		//
 		IsDebugMode: (os.Getenv("is_debug_mode") == "yes"),
 		//
@@ -66,20 +46,10 @@ func (configs ConfigsModel) print() {
 	fmt.Println("")
 	fmt.Println(colorstring.Blue("Fleep configs:"))
 	fmt.Println(" - WebhookURL:", configs.WebhookURL)
-	fmt.Println(" - Channel:", configs.Channel)
 	fmt.Println(" - FromUsername:", configs.FromUsername)
 	fmt.Println(" - FromUsernameOnError:", configs.FromUsernameOnError)
 	fmt.Println(" - Message:", configs.Message)
 	fmt.Println(" - MessageOnError:", configs.MessageOnError)
-	fmt.Println(" - Color:", configs.Color)
-	fmt.Println(" - ColorOnError:", configs.ColorOnError)
-	fmt.Println(" - ImageURL:", configs.ImageURL)
-	fmt.Println(" - ImageURLOnError:", configs.ImageURLOnError)
-	fmt.Println(" - Emoji:", configs.Emoji)
-	fmt.Println(" - EmojiOnError:", configs.EmojiOnError)
-	fmt.Println(" - IconURL:", configs.IconURL)
-	fmt.Println(" - IconURLOnError:", configs.IconURLOnError)
-	fmt.Println(" - IsLinkNames:", configs.IsLinkNames)
 	fmt.Println("")
 	fmt.Println(colorstring.Blue("Other configs:"))
 	fmt.Println(" - IsDebugMode:", configs.IsDebugMode)
@@ -95,35 +65,10 @@ func (configs ConfigsModel) validate() error {
 	if configs.Message == "" {
 		return errors.New("No Message parameter specified")
 	}
-	if configs.Color == "" {
-		return errors.New("No Color parameter specified")
-	}
 
 	return nil
 }
 
-// AttachmentItemModel ...
-type AttachmentItemModel struct {
-	Fallback string   `json:"fallback"`
-	Text     string   `json:"text"`
-	Color    string   `json:"color,omitempty"`
-	ImageURL string   `json:"image_url"`
-	MrkdwnIn []string `json:"mrkdwn_in,omitempty"`
-}
-
-// RequestParams ...
-/*type RequestParams struct {
-	// - required
-	Text string `json:"text"`
-	// OR use attachment instead of text, for better formatting
-	Attachments []AttachmentItemModel `json:"attachments,omitempty"`
-	// - optional
-	Channel   *string `json:"channel"`
-	Username  *string `json:"username"`
-	EmojiIcon *string `json:"icon_emoji"`
-	IconURL   *string `json:"icon_url"`
-	LinkNames int     `json:"link_names"`
-}*/
 type RequestParams struct {
 	// - required
 	Text string `json:"message"`
@@ -138,14 +83,6 @@ func ensureNewlineEscapeChar(s string) string {
 // CreatePayloadParam ...
 func CreatePayloadParam(configs ConfigsModel) ([]byte, error) {
 	// - required
-	/*msgColor := configs.Color
-	if configs.IsBuildFailed {
-		if configs.ColorOnError == "" {
-			fmt.Println(colorstring.Yellow(" (i) Build failed but no color_on_error defined, using default."))
-		} else {
-			msgColor = configs.ColorOnError
-		}
-	}*/
 	msgText := configs.Message
 	if configs.IsBuildFailed {
 		if configs.MessageOnError == "" {
@@ -156,34 +93,11 @@ func CreatePayloadParam(configs ConfigsModel) ([]byte, error) {
 	}
 	msgText = ensureNewlineEscapeChar(msgText)
 	// - optional attachment params
-	/*msgImage := configs.ImageURL
-	if configs.IsBuildFailed {
-		if configs.ImageURLOnError == "" {
-			fmt.Println(colorstring.Yellow(" (i) Build failed but no image_url_on_error defined, using default."))
-		} else {
-			msgImage = configs.ImageURLOnError
-		}
-	}
-
-	reqParams := RequestParams{
-		Attachments: []AttachmentItemModel{
-			{
-				Text: msgText, Fallback: msgText,
-				Color:    msgColor,
-				ImageURL: msgImage,
-				MrkdwnIn: []string{"text", "pretext", "fields"},
-			},
-		},
-	}*/
 	reqParams := RequestParams{
 		Text: msgText,
 	}
 
 	// - optional
-	/*reqChannel := configs.Channel
-	if reqChannel != "" {
-		reqParams.Channel = &reqChannel
-	}*/
 	reqUsername := configs.FromUsername
 	if reqUsername != "" {
 		reqParams.Username = &reqUsername
@@ -196,38 +110,6 @@ func CreatePayloadParam(configs ConfigsModel) ([]byte, error) {
 		}
 	}
 
-	/*reqEmojiIcon := configs.Emoji
-	if reqEmojiIcon != "" {
-		reqParams.EmojiIcon = &reqEmojiIcon
-	}
-	if configs.IsBuildFailed {
-		if configs.EmojiOnError == "" {
-			fmt.Println(colorstring.Yellow(" (i) Build failed but no emoji_on_error defined, using default."))
-		} else {
-			reqParams.EmojiIcon = &configs.EmojiOnError
-		}
-	}
-
-	reqIconURL := configs.IconURL
-	if reqIconURL != "" {
-		reqParams.IconURL = &reqIconURL
-	}
-	if configs.IsBuildFailed {
-		if configs.IconURLOnError == "" {
-			fmt.Println(colorstring.Yellow(" (i) Build failed but no icon_url_on_error defined, using default."))
-		} else {
-			reqParams.IconURL = &configs.IconURLOnError
-		}
-	}
-	// if Icon URL defined ignore the emoji input
-	if reqParams.IconURL != nil {
-		reqParams.EmojiIcon = nil
-	}
-
-	if configs.IsLinkNames {
-		reqParams.LinkNames = 1
-	}*/
-
 	if configs.IsDebugMode {
 		fmt.Printf("Parameters: %#v\n", reqParams)
 	}
@@ -237,9 +119,7 @@ func CreatePayloadParam(configs ConfigsModel) ([]byte, error) {
 	if err != nil {
 		return []byte{}, nil
 	}
-	//reqParamsJSONString := string(reqParamsJSONBytes)
 
-	//return reqParamsJSONString, nil
 	return reqParamsJSONBytes, nil
 }
 
@@ -271,11 +151,6 @@ func main() {
 
 	//
 	// send request
-	/*jsonString, err := json.Marshal(map[string]string{"payload": reqParamsJSONString})
-	if err != nil {
-		fmt.Println(colorstring.Red("Failed to send the request:"), err)
-	}*/
-
 	resp, err := http.Post(requestURL, "application/json", bytes.NewBuffer(reqParamsJSONString))
 	if err != nil {
 		fmt.Println(colorstring.Red("Failed to send the request:"), err)
